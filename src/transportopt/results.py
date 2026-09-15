@@ -45,6 +45,12 @@ def analyze_result(
     unused_supply = case.supply - shipped_by_warehouse
     supply_violation = np.maximum(shipped_by_warehouse - case.supply, 0)
     nonnegativity_violation = np.maximum(-matrix, 0)
+    if np.max(nonnegativity_violation, initial=0) > tolerance:
+        raise ValueError("Shipment contains negative flow beyond tolerance.")
+    if np.max(np.abs(demand_residual), initial=0) > tolerance:
+        raise ValueError("Shipment demand residual exceeds tolerance.")
+    if np.max(supply_violation, initial=0) > tolerance:
+        raise ValueError("Shipment exceeds warehouse supply beyond tolerance.")
     utilization = np.divide(
         shipped_by_warehouse,
         case.supply,
