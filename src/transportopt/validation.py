@@ -1,5 +1,7 @@
 """Validation for transportation-model inputs before solving."""
 
+from fractions import Fraction
+
 import numpy as np
 
 from .domain import InvalidInputError, TransportationInput
@@ -8,11 +10,11 @@ from .domain import InvalidInputError, TransportationInput
 def validate_input(case: TransportationInput) -> TransportationInput:
     """Validate a transportation input and return it unchanged when valid."""
 
-    _validate_labels(case.warehouses, "warehouse")
-    _validate_labels(case.customers, "customer")
+    warehouses = _validate_labels(case.warehouses, "warehouse")
+    customers = _validate_labels(case.customers, "customer")
 
-    warehouse_count = len(case.warehouses)
-    customer_count = len(case.customers)
+    warehouse_count = len(warehouses)
+    customer_count = len(customers)
     try:
         supply = np.asarray(case.supply, dtype=float)
         demand = np.asarray(case.demand, dtype=float)
@@ -33,21 +35,21 @@ def validate_input(case: TransportationInput) -> TransportationInput:
         if (values < 0).any():
             raise InvalidInputError(f"{name} cannot contain negative values.")
 
-    supply_scale = float(supply.max()) if supply.size else 0.0
-    demand_scale = float(demand.max()) if demand.size else 0.0
-    scale = max(supply_scale, demand_scale)
-    normalized_supply = supply / scale if scale else supply
-    normalized_demand = demand / scale if scale else demand
-    if normalized_supply.sum() < normalized_demand.sum():
+    if _exact_total(supply) < _exact_total(demand):
         raise InvalidInputError(
             "Total supply is less than total demand; add supply or reduce demand."
         )
     return case
 
 
-def _validate_labels(labels: tuple[str, ...], kind: str) -> None:
+def _validate_labels(labels: tuple[str, ...], kind: str) -> tuple[str, ...]:
     if isinstance(labels, (str, bytes)):
         raise InvalidInputError(f"Each {kind} name must be non-empty.")
+    try:
+        if iter(labels) is labels:
+            raise InvalidInputError(f"{kind.title()} names must be reusable.")
+    except TypeError as exc:
+        raise InvalidInputError(f"Each {kind} name must be non-empty.") from exc
     try:
         labels = tuple(labels)
     except TypeError as exc:
@@ -56,3 +58,8 @@ def _validate_labels(labels: tuple[str, ...], kind: str) -> None:
         raise InvalidInputError(f"Each {kind} name must be non-empty.")
     if len(set(labels)) != len(labels):
         raise InvalidInputError(f"{kind.title()} names must be unique.")
+    return labels
+
+
+def _exact_total(values: np.ndarray) -> Fraction:
+    return sum((Fraction.from_float(float(value)) for value in values.flat), Fraction())

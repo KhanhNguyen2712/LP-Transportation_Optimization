@@ -70,11 +70,29 @@ def test_rejects_malformed_label_container(field):
         validate_input(replace(_case(), **{field: None}))
 
 
+def test_rejects_non_reusable_generator_labels():
+    case = replace(_case(), warehouses=(label for label in ("W1", "W2")))
+
+    with pytest.raises(InvalidInputError, match="reusable"):
+        validate_input(case)
+
+
 def test_rejects_insufficient_extreme_supply_without_sum_overflow():
     case = replace(
         _case(),
         supply=np.array([1e308, 1e308]),
         demand=np.array([1e308, 1e308, 1e308]),
+    )
+
+    with pytest.raises(InvalidInputError, match="supply.*less than.*demand"):
+        validate_input(case)
+
+
+def test_rejects_tiny_demand_beyond_large_supply():
+    case = replace(
+        _case(),
+        supply=np.array([1e308, 0.0]),
+        demand=np.array([1e308, 1e-323, 0.0]),
     )
 
     with pytest.raises(InvalidInputError, match="supply.*less than.*demand"):
