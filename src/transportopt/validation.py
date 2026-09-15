@@ -33,7 +33,12 @@ def validate_input(case: TransportationInput) -> TransportationInput:
         if (values < 0).any():
             raise InvalidInputError(f"{name} cannot contain negative values.")
 
-    if supply.sum() < demand.sum():
+    supply_scale = float(supply.max()) if supply.size else 0.0
+    demand_scale = float(demand.max()) if demand.size else 0.0
+    scale = max(supply_scale, demand_scale)
+    normalized_supply = supply / scale if scale else supply
+    normalized_demand = demand / scale if scale else demand
+    if normalized_supply.sum() < normalized_demand.sum():
         raise InvalidInputError(
             "Total supply is less than total demand; add supply or reduce demand."
         )
@@ -41,7 +46,13 @@ def validate_input(case: TransportationInput) -> TransportationInput:
 
 
 def _validate_labels(labels: tuple[str, ...], kind: str) -> None:
-    if any(not isinstance(label, str) or not label.strip() for label in labels):
+    if isinstance(labels, (str, bytes)):
+        raise InvalidInputError(f"Each {kind} name must be non-empty.")
+    try:
+        labels = tuple(labels)
+    except TypeError as exc:
+        raise InvalidInputError(f"Each {kind} name must be non-empty.") from exc
+    if not labels or any(not isinstance(label, str) or not label.strip() for label in labels):
         raise InvalidInputError(f"Each {kind} name must be non-empty.")
     if len(set(labels)) != len(labels):
         raise InvalidInputError(f"{kind.title()} names must be unique.")

@@ -34,6 +34,7 @@ def _case():
         ("costs", np.ones((3, 3)), "matrix size"),
         ("supply", np.array([np.nan, 70.0]), "finite"),
         ("demand", np.array([50.0, np.inf, 40.0]), "finite"),
+        ("costs", np.array([[4.0, 6.0, np.inf], [5.0, 4.0, 3.0]]), "finite"),
         ("supply", np.array([-1.0, 70.0]), "negative"),
         ("demand", np.array([50.0, -1.0, 40.0]), "negative"),
         ("costs", np.array([[4.0, -1.0, 8.0], [5.0, 4.0, 3.0]]), "negative"),
@@ -61,3 +62,20 @@ def test_accepts_surplus_supply_and_zero_costs():
     )
 
     assert validate_input(case) is case
+
+
+@pytest.mark.parametrize("field", ["warehouses", "customers"])
+def test_rejects_malformed_label_container(field):
+    with pytest.raises(InvalidInputError, match="name"):
+        validate_input(replace(_case(), **{field: None}))
+
+
+def test_rejects_insufficient_extreme_supply_without_sum_overflow():
+    case = replace(
+        _case(),
+        supply=np.array([1e308, 1e308]),
+        demand=np.array([1e308, 1e308, 1e308]),
+    )
+
+    with pytest.raises(InvalidInputError, match="supply.*less than.*demand"):
+        validate_input(case)
