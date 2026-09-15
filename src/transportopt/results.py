@@ -52,7 +52,12 @@ def analyze_result(
         where=case.supply != 0,
     )
     routes = tuple(
-        {"warehouse": case.warehouses[i], "customer": case.customers[j], "flow": float(matrix[i, j]), "cost": float(case.costs[i, j])}
+        {
+            "warehouse": case.warehouses[i],
+            "customer": case.customers[j],
+            "flow": float(matrix[i, j]),
+            "cost": float(case.costs[i, j]),
+        }
         for i in range(matrix.shape[0])
         for j in range(matrix.shape[1])
         if matrix[i, j] > tolerance
@@ -69,6 +74,3 @@ def analyze_result(
         solver_status=solved.status,
         solver_message=solved.message,
     )
-
-
-analyze = analyze_result

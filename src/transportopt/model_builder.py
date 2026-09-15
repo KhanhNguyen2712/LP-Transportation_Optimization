@@ -34,6 +34,3 @@ def build_model(case: TransportationInput) -> LinearProgram:
         A_eq=demand_rows,
         b_eq=np.asarray(case.demand, dtype=float).copy(),
     )
-
-
-build_linear_program = build_model
