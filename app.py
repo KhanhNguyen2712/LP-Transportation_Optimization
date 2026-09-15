@@ -1,5 +1,26 @@
 """Small Streamlit front end for the transportation linear program."""
 
+import numpy as np
+
+
+class FeasibilityGateError(RuntimeError):
+    """The solver returned a result that fails the presentation safety gate."""
+
+
+def _require_feasible(analysis, tolerance=1e-8):
+    checks = (
+        ("customer demand", analysis.demand_residual),
+        ("warehouse supply", analysis.supply_violation),
+        ("nonnegative shipment", analysis.nonnegativity_violation),
+    )
+    for label, values in checks:
+        values = np.asarray(values, dtype=float)
+        if not np.isfinite(values).all() or np.max(np.abs(values), initial=0.0) > tolerance:
+            raise FeasibilityGateError(f"{label} check failed; result was not displayed.")
+    if not np.isfinite(float(analysis.objective)):
+        raise FeasibilityGateError("Objective check failed; result was not displayed.")
+    return analysis
+
 
 def _resize(values, size, fill):
     values = list(values[:size])
@@ -88,10 +109,17 @@ def main():
             )
             validate_input(case)
             solved = solve(build_model(case))
-            if solved.status != "optimal":
-                st.error(f"Solver could not find an optimal solution: {solved.message}")
+            if solved.status == "infeasible":
+                st.error(f"No feasible solution exists for these inputs: {solved.message}")
+            elif solved.status == "error":
+                st.error(f"The solver failed before producing a result: {solved.message}")
+            elif solved.status != "optimal":
+                st.error(f"Solver returned an unexpected status: {solved.status}")
             else:
-                render_result(st, analyze_result(case, solved), case.warehouses)
+                analysis = _require_feasible(analyze_result(case, solved))
+                render_result(st, analysis, case.warehouses)
+        except FeasibilityGateError as exc:
+            st.error(f"The solution could not be verified: {exc}")
         except (InvalidInputError, TypeError, ValueError) as exc:
             st.error(f"Please fix the input: {exc}")
 
