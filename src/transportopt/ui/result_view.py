@@ -9,9 +9,7 @@ def positive_route_rows(analysis: ResultAnalysis) -> list[dict[str, Any]]:
     return [dict(route) for route in analysis.routes]
 
 
-def render_result(
-    st: Any, analysis: ResultAnalysis, warehouses: Sequence[str]
-) -> None:
+def render_result(st: Any, analysis: ResultAnalysis, warehouses: Sequence[str]) -> None:
     st.success(f"Optimal solution found · total cost: {analysis.objective:.2f}")
     st.subheader("Positive routes")
     st.dataframe(positive_route_rows(analysis), use_container_width=True)

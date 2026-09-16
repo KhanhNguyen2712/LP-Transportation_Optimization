@@ -5,7 +5,6 @@ import pytest
 from transportopt.domain import TransportationInput
 from transportopt.fixtures import load_fixture
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

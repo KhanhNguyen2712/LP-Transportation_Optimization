@@ -1,5 +1,5 @@
-from pathlib import Path
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -8,7 +8,6 @@ from transportopt.fixtures import load_fixture
 from transportopt.model_builder import build_model
 from transportopt.results import analyze_result
 from transportopt.solver import solve
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

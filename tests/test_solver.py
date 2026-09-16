@@ -8,7 +8,6 @@ from transportopt.fixtures import load_fixture
 from transportopt.model_builder import build_model
 from transportopt.solver import solve
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -25,7 +24,15 @@ def test_highs_solves_fixture(filename):
 def test_nonoptimal_result_has_no_shipment():
     from transportopt.model_builder import LinearProgram
 
-    result = solve(LinearProgram(np.array([1.0]), np.array([[1.0]]), np.array([0.0]), np.array([[1.0]]), np.array([1.0])))
+    result = solve(
+        LinearProgram(
+            np.array([1.0]),
+            np.array([[1.0]]),
+            np.array([0.0]),
+            np.array([[1.0]]),
+            np.array([1.0]),
+        )
+    )
 
     assert result.status == "infeasible"
     assert result.shipment is None

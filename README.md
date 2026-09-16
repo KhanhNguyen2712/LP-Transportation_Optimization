@@ -7,20 +7,20 @@ SciPy HiGHS tìm phương án có tổng chi phí nhỏ nhất.
 ## Yêu cầu
 
 - Python 3.11 trở lên
-- `pip`
+- [uv](https://docs.astral.sh/uv/)
 
 ## Cài đặt
 
 Chạy từ thư mục gốc của repository:
 
 ```bash
-python -m pip install -e ".[dev]"
+uv sync --group dev
 ```
 
 ## Chạy ứng dụng
 
 ```bash
-PYTHONPATH=src streamlit run app.py
+uv run streamlit run app.py
 ```
 
 Trong sidebar, chọn `3 × 5 example`, bấm `Load fixture`, rồi bấm
@@ -28,10 +28,15 @@ Trong sidebar, chọn `3 × 5 example`, bấm `Load fixture`, rồi bấm
 
 ## Chạy tests
 
-Repository dùng source layout `src/`, vì vậy đặt `PYTHONPATH` khi chạy test:
+```bash
+uv run pytest -q
+```
+
+## Lint và format
 
 ```bash
-PYTHONPATH=src python -m pytest -q
+uv run ruff check .
+uv run ruff format --check .
 ```
 
 ## Chạy thực nghiệm tái lập
@@ -40,13 +45,13 @@ Runner dùng seed mặc định `17` và các kích thước cố định trong
 `scripts/run_experiments.py`:
 
 ```bash
-PYTHONPATH=src python scripts/run_experiments.py
+uv run python scripts/run_experiments.py
 ```
 
 CSV được ghi tại `runs/experiments.csv`. Có thể đổi seed hoặc đường dẫn output:
 
 ```bash
-PYTHONPATH=src python scripts/run_experiments.py \
+uv run python scripts/run_experiments.py \
   --seed 17 --output runs/experiments.csv
 ```
 

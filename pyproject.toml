@@ -9,7 +9,7 @@ description = "Transportation optimization with linear programming"
 requires-python = ">=3.11"
 dependencies = ["numpy", "scipy", "pandas", "streamlit"]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["pytest", "ruff"]
 
 [tool.setuptools.packages.find]
@@ -17,6 +17,14 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = [".", "src"]
 
 [tool.ruff]
 line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"

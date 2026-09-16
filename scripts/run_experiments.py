@@ -18,7 +18,6 @@ from transportopt.results import analyze_result
 from transportopt.solver import solve
 from transportopt.validation import validate_input
 
-
 SIZES = ((2, 3), (5, 10), (10, 50), (50, 100), (100, 500))
 FIELDS = (
     "seed",

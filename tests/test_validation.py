@@ -1,5 +1,5 @@
-from pathlib import Path
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -7,7 +7,6 @@ import pytest
 from transportopt.domain import InvalidInputError
 from transportopt.fixtures import load_fixture
 from transportopt.validation import validate_input
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

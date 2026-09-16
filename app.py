@@ -15,8 +15,13 @@ def _require_feasible(analysis, tolerance=1e-8):
     )
     for label, values in checks:
         values = np.asarray(values, dtype=float)
-        if not np.isfinite(values).all() or np.max(np.abs(values), initial=0.0) > tolerance:
-            raise FeasibilityGateError(f"{label} check failed; result was not displayed.")
+        if (
+            not np.isfinite(values).all()
+            or np.max(np.abs(values), initial=0.0) > tolerance
+        ):
+            raise FeasibilityGateError(
+                f"{label} check failed; result was not displayed."
+            )
     if not np.isfinite(float(analysis.objective)):
         raise FeasibilityGateError("Objective check failed; result was not displayed.")
     return analysis
@@ -110,9 +115,13 @@ def main():
             validate_input(case)
             solved = solve(build_model(case))
             if solved.status == "infeasible":
-                st.error(f"No feasible solution exists for these inputs: {solved.message}")
+                st.error(
+                    f"No feasible solution exists for these inputs: {solved.message}"
+                )
             elif solved.status == "error":
-                st.error(f"The solver failed before producing a result: {solved.message}")
+                st.error(
+                    f"The solver failed before producing a result: {solved.message}"
+                )
             elif solved.status != "optimal":
                 st.error(f"Solver returned an unexpected status: {solved.status}")
             else:

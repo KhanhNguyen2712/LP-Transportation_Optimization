@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 
 from app import FeasibilityGateError, _require_feasible
-from transportopt.ui.input_form import case_from_tables
-from transportopt.ui.result_view import positive_route_rows
 from transportopt.domain import TransportationInput
 from transportopt.results import analyze_result
 from transportopt.solver import SolveResult
+from transportopt.ui.input_form import case_from_tables
+from transportopt.ui.result_view import positive_route_rows
 
 
 class _Analysis:
