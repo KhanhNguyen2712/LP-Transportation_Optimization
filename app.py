@@ -101,7 +101,7 @@ def main():
         costs, index=list(warehouse_data["name"]), columns=list(customer_data["name"])
     )
     st.write("Unit cost matrix")
-    cost_data = st.data_editor(cost_data, key="costs", use_container_width=True)
+    cost_data = st.data_editor(cost_data, key="costs", width="stretch")
 
     if st.button("Validate and solve", type="primary"):
         try:

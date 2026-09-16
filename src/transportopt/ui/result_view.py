@@ -12,7 +12,7 @@ def positive_route_rows(analysis: ResultAnalysis) -> list[dict[str, Any]]:
 def render_result(st: Any, analysis: ResultAnalysis, warehouses: Sequence[str]) -> None:
     st.success(f"Optimal solution found · total cost: {analysis.objective:.2f}")
     st.subheader("Positive routes")
-    st.dataframe(positive_route_rows(analysis), use_container_width=True)
+    st.dataframe(positive_route_rows(analysis), width="stretch")
 
     st.subheader("Warehouse usage")
     rows = [
@@ -25,4 +25,4 @@ def render_result(st: Any, analysis: ResultAnalysis, warehouses: Sequence[str]) 
             warehouses, analysis.unused_supply, analysis.warehouse_utilization
         )
     ]
-    st.dataframe(rows, use_container_width=True)
+    st.dataframe(rows, width="stretch")
