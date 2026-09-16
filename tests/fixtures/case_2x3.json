@@ -1,0 +1,9 @@
+{
+  "name": "case_2x3",
+  "warehouses": ["W1", "W2"],
+  "customers": ["C1", "C2", "C3"],
+  "supply": [80, 70],
+  "demand": [50, 60, 40],
+  "costs": [[4, 6, 8], [5, 4, 3]],
+  "expected_objective": 620
+}
