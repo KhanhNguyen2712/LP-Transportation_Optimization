@@ -645,7 +645,11 @@ def convert(md_path: Path, docx_path: Path, ref_path: Path) -> None:
             "+footnotes+raw_tex+hard_line_breaks"
         ),
         outputfile=str(docx_path),
-        extra_args=[f"--reference-doc={ref_path}", "--standalone"],
+        extra_args=[
+            f"--reference-doc={ref_path}",
+            f"--resource-path={md_path.parent}",
+            "--standalone",
+        ],
     )
     tables, paragraphs = postprocess(docx_path)
     print(f"OK: {docx_path} ({tables} bảng, {paragraphs} đoạn)")

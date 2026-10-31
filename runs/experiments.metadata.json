@@ -1,0 +1,68 @@
+{
+  "created_utc": "2026-10-31T10:35:18.499463+00:00",
+  "seeds": [
+    17,
+    18,
+    19
+  ],
+  "repeats": 3,
+  "sizes": [
+    [
+      2,
+      3
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      10,
+      50
+    ],
+    [
+      50,
+      100
+    ],
+    [
+      100,
+      500
+    ]
+  ],
+  "versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "pandas": "3.0.5",
+    "streamlit": "1.63.0"
+  },
+  "python": "3.13.12",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "cpu": "13th Gen Intel(R) Core(TM) i7-13620H",
+  "logical_cpus": 16,
+  "system_memory_bytes": 16452562944,
+  "git_commit": "c0633868a090118a74e6daa680a04a69b0e92490",
+  "git_dirty": false,
+  "source_sha256": {
+    "scripts/run_experiments.py": "5e6909cdae9976710b77927073f4c62c3c7c16b280fb1f9b34c03afdaa6fb7e0",
+    "src/transportopt/__init__.py": "a3d3bb9bdab528d93258b738e4cc312c4cf08222f4587a6f3ebe5ca7daaff33b",
+    "src/transportopt/baselines.py": "780222858779e5e687393fc4ec064217eeaa3e9727d60e3234350057724bde23",
+    "src/transportopt/domain.py": "009cfcca90645ae9eb47d63e300882d9bc49035973b2e7ba2029796c4d19ce3f",
+    "src/transportopt/fixtures.py": "6f5a354f42f2c67f15fa0ecb72cce20f712a0a4604d54718251937d9c4350af1",
+    "src/transportopt/model_builder.py": "c1a0f7a38f212208d6b27345bd87551ba057516bbf77ce1fb54aae92356f45fd",
+    "src/transportopt/results.py": "836eb72fe39096f26296887d0afe5ca1ec4cf57e30c0adad7fe350a22ba9e7ed",
+    "src/transportopt/solver.py": "ff6f5dfc538b884d6350ddf5291d84a20d43d485d5888b1f8944f44fe6699e96",
+    "src/transportopt/ui/__init__.py": "a94e7a6a75792486abf238e59e75a616bb8c67ba88dfba52ae61f42a89fe9b0e",
+    "src/transportopt/ui/explanation.py": "b097f744ac081fec198efe752c7fce3306c9ea6f2bdafb5231ed27b20eb8dd06",
+    "src/transportopt/ui/input_form.py": "84d8fcaf71f913da623ae2be39518b30a961f3b56d9616fd827b6384f2b97353",
+    "src/transportopt/ui/result_view.py": "439395c38b65e5293097e9e06c254a9df72db046de55d81c151bdf8dfce56f24",
+    "src/transportopt/validation.py": "e0b778f8c1ef035c49589cc3e9888e9a6a115163dc7cc3f27ba34b9b7a8a4f9c"
+  },
+  "measurement": {
+    "runtime": "seconds: validation + model build + solve + analysis; excludes generation and greedy",
+    "build_seconds": "seconds: build_model only",
+    "solve_seconds": "seconds: solve wrapper including SciPy conversion, presolve and HiGHS",
+    "memory": "bytes: peak tracemalloc allocation during LP pipeline; not total process RSS or native solver RAM",
+    "greedy_seconds": "seconds: greedy validation + allocation; excludes objective and residual checks",
+    "saving_ratio": "(greedy_objective - objective) / greedy_objective; blank if denominator is zero",
+    "order": "sequential: size, seed, repeat; no warmup; tracemalloc enabled during LP timings"
+  }
+}

@@ -38,17 +38,21 @@
 3.9. Phương pháp giải tay và lựa chọn thuật toán
 
 **4. SẢN PHẨM PHẦN MỀM TÌM PHƯƠNG ÁN TỐI ƯU CHO BÀI TOÁN VẬN TẢI**
-4.1. Mục tiêu sản phẩm
-4.2. Yêu cầu chức năng
-4.3. Mô hình toán học
-4.4. Kiến trúc hệ thống
-4.5. Quy trình hoạt động
-4.6. Thiết kế giao diện
-4.7. Công nghệ đề xuất
-4.8. Dữ liệu thử nghiệm
-4.9. Phương pháp đánh giá
-4.10. Các trường hợp kiểm thử
-4.11. Hướng mở rộng
+4.1. Tên sản phẩm
+4.2. Mục tiêu sản phẩm
+4.3. Dữ liệu đầu vào
+4.4. Mô hình toán học
+4.5. Kết quả kiểm chứng trên dữ liệu minh họa
+4.6. Kiến trúc phần mềm
+4.7. Các chức năng đã triển khai
+4.8. Công nghệ sử dụng
+4.9. Quy trình hoạt động và tái lập
+4.10. Phương pháp đánh giá
+4.11. Phương pháp baseline
+4.12. Kết quả thực nghiệm
+4.13. Thiết kế giao diện và demo
+4.14. Kết quả kiểm thử
+4.15. Giới hạn và hướng mở rộng
 
 **5. KẾT LUẬN**
 
@@ -1090,695 +1094,229 @@ Simplex, NW Corner, Least Cost, Vogel và MODI được trình bày trong báo c
 
 # 4. SẢN PHẨM PHẦN MỀM TÌM PHƯƠNG ÁN TỐI ƯU CHO BÀI TOÁN VẬN TẢI
 
-## 4.1. Tên sản phẩm dự kiến
+## 4.1. Tên sản phẩm
 
-**TransportOpt – Hệ thống tối ưu phương án vận chuyển bằng quy hoạch tuyến tính**
+**TransportOpt – Hệ thống tối ưu phương án vận chuyển bằng quy hoạch tuyến tính.** Sản phẩm được triển khai bằng Streamlit, dùng SciPy HiGHS để giải bài toán phân bổ một loại hàng từ nhiều kho đến nhiều khách hàng với chi phí tuyến tính.
 
----
+## 4.2. Mục tiêu sản phẩm
 
-# 4.2. Mục tiêu sản phẩm
+Ứng dụng chuyển dữ liệu cung, cầu và chi phí thành mô hình LP, tìm phương án vận chuyển có chi phí nhỏ nhất, sau đó giúp người dùng đọc và kiểm tra phương án. Luồng demo gồm bốn bước: nhập dữ liệu, mô hình hóa, giải bài toán và kiểm chứng nghiệm. Phần diễn giải kết nối mạng vận tải với biểu diễn đại số tuyến tính, phù hợp đối chiếu ví dụ giải tay trong Chương 2 và Chương 3.
 
-Phần mềm nhận dữ liệu:
+Phiên bản hiện tại tập trung vào cung/cầu đã biết, một loại hàng và tất cả các tuyến kho–khách hàng đều được phép sử dụng. Không xét địa lý, thời gian giao hàng, đội xe, chi phí cố định hoặc bài toán định tuyến xe.
 
-$$
-Warehouse
-+
-Customer
-+
-Supply
-+
-Demand
-+
-Cost
-$$
+## 4.3. Dữ liệu đầu vào
 
-và trả về:
+Người dùng nhập tên và lượng cung của từng kho, tên và lượng cầu của từng khách hàng, cùng ma trận chi phí trên một đơn vị hàng. Hàng của ma trận tương ứng với kho; cột tương ứng với khách hàng. Các lượng hàng phải dùng cùng một đơn vị; chi phí đầu vào và đầu ra dùng cùng một đơn vị chi phí, không mặc định là đồng Việt Nam.
 
-$$
-Optimal\ Transportation\ Plan
-$$
+Dữ liệu minh họa 2 kho và 3 khách hàng được tích hợp sẵn:
 
-cùng với:
+| Kho | C1 | C2 | C3 | Cung |
+| --- | ---: | ---: | ---: | ---: |
+| W1 | 4 | 6 | 8 | 80 |
+| W2 | 5 | 4 | 3 | 70 |
+| Cầu | 50 | 60 | 40 | 150 |
+
+Tên phải không rỗng, không trùng trong cùng nhóm. Cung, cầu và chi phí phải là số hữu hạn không âm, đúng kích thước. Nếu tổng cung nhỏ hơn tổng cầu, ứng dụng báo dữ liệu không thể đáp ứng toàn bộ nhu cầu và không gọi solver. Khi tổng cung lớn hơn tổng cầu, hàng dư được giữ tại kho.
+
+## 4.4. Mô hình toán học
+
+Gọi $x_{ij}$ là lượng hàng từ kho $i$ đến khách hàng $j$; $s_i$ là cung kho, $d_j$ là cầu và $c_{ij}$ là chi phí đơn vị. Mô hình được giải là:
 
 $$
-Minimum\ Cost
-$$
-
----
-
-# 4.3. Dữ liệu đầu vào
-
-Người dùng khai báo:
-
-### Kho hàng
-
-| Kho | Năng lực |
-| --- | ---------: |
-| W1  |         80 |
-| W2  |         70 |
-
-### Khách hàng
-
-| Khách hàng | Nhu cầu |
-| ------------ | -------: |
-| C1           |       50 |
-| C2           |       60 |
-| C3           |       40 |
-
-### Ma trận chi phí
-
-|    | C1 | C2 | C3 |
-| -- | -: | -: | -: |
-| W1 |  4 |  6 |  8 |
-| W2 |  5 |  4 |  3 |
-
----
-
-# 4.4. Mô hình toán
-
-Biến:
-
-$$
-x_{ij}
-$$
-
-Hàm mục tiêu:
-
-$$
-\min
-4x_{11}
-+6x_{12}
-+8x_{13}
-+5x_{21}
-+4x_{22}
-+3x_{23}
-$$
-
-Constraints:
-
-$$
-x_{11}+x_{12}+x_{13}\leq80
+\min Z=\sum_{i=1}^{m}\sum_{j=1}^{n}c_{ij}x_{ij}
 $$
 
 $$
-x_{21}+x_{22}+x_{23}\leq70
+\sum_{j=1}^{n}x_{ij}\le s_i\ (i=1,\ldots,m),\qquad
+\sum_{i=1}^{m}x_{ij}=d_j\ (j=1,\ldots,n),\qquad x_{ij}\ge0.
 $$
 
-$$
-x_{11}+x_{21}=50
-$$
+Vector biến được xếp theo hàng: $x=(x_{11},\ldots,x_{1n},x_{21},\ldots,x_{mn})^T$. Chỉ số phẳng trong code là $k=i n+j$, với chỉ số bắt đầu từ 0. Vector $c$ dùng cùng thứ tự. Ma trận $A_{ub}$ có kích thước $m\times mn$, mỗi hàng chọn các biến xuất phát từ một kho; $b_{ub}=s$. Ma trận $A_{eq}$ có kích thước $n\times mn$, mỗi hàng chọn các biến đến một khách hàng; $b_{eq}=d$.
 
 $$
-x_{12}+x_{22}=60
+\min c^Tx,\qquad A_{ub}x\le b_{ub},\qquad A_{eq}x=b_{eq},\qquad x\ge0.
 $$
 
-$$
-x_{13}+x_{23}=40
-$$
+Ứng dụng hiển thị bảng ánh xạ biến và các ma trận thực tế để đối chiếu. Ràng buộc cung là bất đẳng thức nên trường hợp thừa cung không cần thêm khách hàng giả trong mô hình phần mềm. Biến là liên tục; ứng dụng không bổ sung ràng buộc nguyên cho lượng hàng.
+
+## 4.5. Kết quả kiểm chứng trên dữ liệu minh họa
+
+Với ví dụ 2×3, phương án trả về gồm W1→C1: 50, W1→C2: 30, W2→C2: 30 và W2→C3: 40. Tổng chi phí được tính lại từ lượng hàng và đơn giá:
 
 $$
-x_{ij}\geq0
+Z=50(4)+30(6)+30(4)+40(3)=\boxed{620}.
 $$
 
----
+Với case study 3×5 ở Mục 2.10, HiGHS trả chi phí **696**, trùng kết quả giải tay. Một phương án phần mềm trả về là:
 
-# 4.5. Kết quả mong đợi
+| Tuyến | Lượng giao | Chi phí đơn vị | Thành tiền |
+| --- | ---: | ---: | ---: |
+| A→X | 8 | 15 | 120 |
+| A→Y | 10 | 10 | 100 |
+| B→V | 8 | 15 | 120 |
+| B→Z | 17 | 10 | 170 |
+| C→V | 6 | 17 | 102 |
+| C→W | 6 | 14 | 84 |
+| Tổng | 55 | | 696 |
 
-Ví dụ:
+Case này có nhiều nghiệm tối ưu, nên không yêu cầu ma trận lượng giao phải giống hệt ví dụ giải tay. Điều kiện đối chiếu là thỏa cung/cầu và cùng chi phí tối ưu 696.
 
-| Từ | Đến | Lượng hàng |
-| --- | ----- | ------------: |
-| W1  | C1    |            50 |
-| W1  | C2    |            30 |
-| W2  | C2    |            30 |
-| W2  | C3    |            40 |
+![Hình 4.1. Mạng phân bổ tối ưu trên dữ liệu 3×5; x là lượng giao và c là chi phí đơn vị.](../demo/3x5-network.png){width=15cm}
 
-Tổng:
+## 4.6. Kiến trúc phần mềm
 
-$$
-50+30=80
-$$
+Hệ thống tách giao diện, kiểm tra dữ liệu, dựng mô hình, giải tối ưu và phân tích kết quả. Các thành phần dùng chung hợp đồng dữ liệu `TransportationInput`, `LinearProgram`, `SolveResult` và `ResultAnalysis`.
 
-đơn vị từ W1.
+| Thành phần | Mã nguồn | Trách nhiệm |
+| --- | --- | --- |
+| Giao diện | `app.py`, `ui/` | Nhập bảng, chọn ví dụ, diễn giải và hiển thị |
+| Kiểm tra dữ liệu | `validation.py` | Kiểm tra tên, kích thước, số hữu hạn, không âm và tổng cung/cầu |
+| Dựng mô hình | `model_builder.py` | Tạo c, A_ub, b_ub, A_eq, b_eq và cận biến |
+| Giải tối ưu | `solver.py` | Gọi SciPy HiGHS, chuẩn hóa trạng thái và lỗi |
+| Phân tích kết quả | `results.py` | Tạo ma trận X, tính lại chi phí, kiểm tra cung/cầu và hàng dư |
+| Baseline và thực nghiệm | `baselines.py`, `scripts/run_experiments.py` | Phân bổ greedy, đo đạc và xuất bằng chứng |
 
-$$
-30+40=70
-$$
+Pipeline thực tế: **Streamlit → validate_input → build_model → solve → analyze_result → kiểm chứng khả thi → sơ đồ, bảng, biểu đồ và xuất tệp**. Nếu dữ liệu hoặc kết quả không đạt kiểm tra, ứng dụng hiển thị lỗi thay vì trình bày phương án như một nghiệm hợp lệ.
 
-đơn vị từ W2.
+## 4.7. Các chức năng đã triển khai
 
-Chi phí:
+- Chọn bộ mẫu 2×3 hoặc 3×5; điều chỉnh số kho và số khách hàng, sửa tên, cung/cầu và chi phí trên bảng.
+- Kiểm tra dữ liệu trước khi dựng mô hình; cảnh báo thiếu cung, dữ liệu âm, không hữu hạn hoặc sai kích thước.
+- Vẽ mạng kho–khách hàng trước tối ưu và chỉ các tuyến có lượng giao dương sau tối ưu; có bộ lọc theo khách hàng.
+- Hiển thị biến quyết định, hàm mục tiêu, ràng buộc và các ma trận LP có nhãn.
+- Giải bằng HiGHS; hiển thị ma trận lượng giao, chi phí từng tuyến, tổng chi phí, lượng hàng còn lại và tỷ lệ sử dụng kho.
+- Kiểm chứng ràng buộc trước khi trình bày kết quả; xuất sơ đồ SVG và phương án CSV.
+- Xoá nghiệm cũ khi dữ liệu thay đổi; giữ kết quả khi người dùng đổi tab hoặc lọc sơ đồ của cùng bộ dữ liệu.
 
-$$
-50(4)+30(6)+30(4)+40(3)
-$$
+Giao diện cho phép nhập từ 1 đến 20 kho và từ 1 đến 20 khách hàng. Các bài toán lớn hơn được chạy qua script thực nghiệm. Phần diễn giải trình bày cách lập mô hình và kiểm chứng nghiệm; chưa xuất nhật ký pivot hoặc các vòng lặp Simplex/MODI.
 
-$$
-=\boxed{620}
-$$
+## 4.8. Công nghệ sử dụng
 
----
+Sản phẩm dùng Python, NumPy để biểu diễn dữ liệu/mô hình, Pandas để trình bày bảng, SciPy `linprog(method='highs')` để giải LP và Streamlit để xây giao diện. Pytest kiểm thử các lớp chức năng; Ruff kiểm tra và định dạng mã nguồn. Không có bộ giải OR-Tools trong phiên bản đang đánh giá.
 
-# 4.6. Kiến trúc phần mềm
+Môi trường thực nghiệm ngày 31/10/2026: Python 3.13.12, NumPy 2.5.3, SciPy 1.18.1, Pandas 3.0.5 và Streamlit 1.63.0; Linux x86_64, CPU Intel Core i7-13620H, 16 CPU logic, RAM hệ thống khoảng 15,32 GiB. Đây là cấu hình máy đo, không phải yêu cầu phần cứng tối thiểu. Các phiên bản được lưu trong lockfile và metadata đi kèm kết quả.
 
-Kiến trúc đề xuất:
+## 4.9. Quy trình hoạt động và tái lập
 
-```text
-┌─────────────────────────────┐
-│       User Interface        │
-│                             │
-│ Warehouse / Customer / Cost │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│      Input Validation       │
-│                             │
-│ Supply / Demand / Cost      │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│ Mathematical Model Builder  │
-│                             │
-│   x, c, A, b, constraints   │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│    Optimization Engine      │
-│                             │
-│     HiGHS / OR-Tools        │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│       Result Analyzer       │
-│                             │
-│ Cost / Flow / Utilization   │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│        Visualization        │
-│                             │
-│ Table / Matrix / Charts     │
-└─────────────────────────────┘
+Người dùng nhập hoặc nạp dữ liệu; hệ thống kiểm tra hợp lệ, dựng mô hình và trình bày mạng lưới. Khi bấm **Tìm phương án tối ưu**, mô hình được gửi tới HiGHS. Chỉ khi solver trả `optimal` và kết quả vượt qua kiểm chứng cung/cầu, không âm và chi phí hữu hạn, giao diện mới hiển thị nghiệm.
+
+Chạy từ thư mục gốc repository:
+
+```bash
+uv sync --group dev
+uv run streamlit run app.py
+uv run pytest -q
+uv run ruff check .
+uv run ruff format --check .
 ```
 
----
+Chạy lại thực nghiệm với đúng seed và số lần lặp, ghi ra tệp riêng để giữ nguyên bằng chứng đã lưu:
 
-# 4.7. Các chức năng chính
-
-## Chức năng 1 – Quản lý kho
-
-Cho phép:
-
-- thêm kho;
-- xóa kho;
-- chỉnh sửa kho;
-- nhập capacity.
-
----
-
-## Chức năng 2 – Quản lý điểm nhận hàng
-
-Cho phép:
-
-- thêm khách hàng;
-- xóa;
-- sửa;
-- nhập demand.
-
----
-
-## Chức năng 3 – Nhập ma trận chi phí
-
-Người dùng nhập:
-
-$$
-C=
-\begin{bmatrix}
-c_{11}&\cdots&c_{1n}\\
-\vdots&&\vdots\\
-c_{m1}&\cdots&c_{mn}
-\end{bmatrix}
-$$
-
----
-
-## Chức năng 4 – Kiểm tra dữ liệu
-
-Hệ thống kiểm tra:
-
-$$
-TotalSupply\geq TotalDemand
-$$
-
-Nếu:
-
-$$
-TotalSupply<TotalDemand
-$$
-
-hệ thống cảnh báo bài toán không thể đáp ứng toàn bộ nhu cầu.
-
----
-
-## Chức năng 5 – Tạo mô hình toán tự động
-
-Chuyển dữ liệu thành:
-
-$$
-c
-$$
-
-$$
-A_{ub}
-$$
-
-$$
-b_{ub}
-$$
-
-$$
-A_{eq}
-$$
-
-$$
-b_{eq}
-$$
-
-Đây là phần thể hiện rõ nhất kiến thức Linear Algebra trong sản phẩm.
-
----
-
-## Chức năng 6 – Tối ưu
-
-Gửi mô hình tới solver.
-
-Ví dụ với SciPy:
-
-$$
-linprog(c,A_{ub},b_{ub},A_{eq},b_{eq})
-$$
-
-SciPy hiện sử dụng HiGHS làm solver mặc định cho `linprog`, với các phương pháp simplex và interior-point hiệu năng cao.[^2]
-
----
-
-## Chức năng 7 – Hiển thị kết quả
-
-Bao gồm:
-
-- số lượng vận chuyển trên từng tuyến;
-- tổng chi phí;
-- lượng hàng còn lại tại từng kho;
-- tỷ lệ sử dụng capacity.
-
----
-
-# 4.8. Công nghệ đề xuất
-
-## Ngôn ngữ
-
-$$
-\boxed{Python}
-$$
-
-### Tính toán
-
-- NumPy;
-- Pandas.
-
-### Optimization
-
-Ưu tiên:
-
-$$
-\boxed{SciPy + HiGHS}
-$$
-
-hoặc:
-
-$$
-\boxed{Google\ OR\text{-}Tools}
-$$
-
-### Giao diện
-
-Đơn giản nhất:
-
-$$
-\boxed{Streamlit}
-$$
-
-Kiến trúc:
-
-```text
-Streamlit
-    ↓
-Python
-    ↓
-NumPy/Pandas
-    ↓
-SciPy / HiGHS
+```bash
+uv run python scripts/run_experiments.py \
+  --seeds 17 18 19 --repeats 3 \
+  --output /tmp/transportopt-experiments.csv
 ```
 
-Ưu điểm:
+Kết quả gốc được lưu tại `runs/experiments.csv`; `runs/experiments.metadata.json` ghi môi trường, thứ tự chạy, commit source và SHA-256 từng tệp mã nguồn. Source thực nghiệm là commit `c0633868a090118a74e6daa680a04a69b0e92490`, với cây làm việc sạch tại thời điểm thu thập. Tệp `runs/experiments_summary.csv` tổng hợp theo kích thước bài toán.
 
-- dễ triển khai;
-- ít code frontend;
-- phù hợp đồ án;
-- dễ demo.
+## 4.10. Phương pháp đánh giá
 
----
+**Chi phí:** tính lại $Z=\sum c_{ij}x_{ij}$ từ ma trận lượng giao, không chỉ sử dụng objective do solver báo.
 
-# 4.9. Pipeline xử lý
-
-```text
-Nhập dữ liệu
-     ↓
-Kiểm tra dữ liệu
-     ↓
-Tạo decision variables
-     ↓
-Tạo cost vector c
-     ↓
-Tạo constraint matrix A
-     ↓
-Tạo vector b
-     ↓
-Giải LP
-     ↓
-Kiểm tra trạng thái solver
-     ↓
-Tính tổng chi phí
-     ↓
-Hiển thị phương án tối ưu
-```
-
----
-
-# 4.10. Phương pháp đánh giá
-
-Không nên chỉ demo phần mềm chạy được mà cần đánh giá định lượng.
-
-## Metric 1 – Optimal Cost
+**Vi phạm ràng buộc:** với $X$ là ma trận lượng giao, tính:
 
 $$
-C^*
+\epsilon=\max\left\{\max_j\left|\sum_i x_{ij}-d_j\right|,\quad
+\max_i\max\left(\sum_j x_{ij}-s_i,0\right),\quad
+\max_{i,j}\max(-x_{ij},0)\right\}.
 $$
 
-là chi phí phương án solver tìm được.
+Ngưỡng chấp nhận là $\epsilon\le10^{-8}$. Cả nghiệm LP và greedy đều được kiểm tra khả thi. Kiểm chứng này xác nhận ràng buộc; kết luận tối ưu của LP dựa trên trạng thái `optimal` của HiGHS.
 
----
+**Thời gian:** `build_seconds` đo dựng ma trận; `solve_seconds` đo lời gọi `solve`, gồm chuyển đổi dữ liệu trong SciPy, presolve và HiGHS. Cột `runtime` đo validation + dựng mô hình + gọi solver + phân tích kết quả, không gồm sinh dữ liệu, chạy greedy hoặc render giao diện. `greedy_seconds` đo validation và phân bổ greedy, không gồm tính chi phí và kiểm tra residual sau đó. Do phạm vi đo khác nhau, báo cáo không dùng hai cột thời gian này để kết luận thuật toán nào nhanh hơn.
 
-## Metric 2 – Constraint violation
+**Bộ nhớ:** `memory` là đỉnh số byte cấp phát được `tracemalloc` theo dõi trong pipeline LP. Giá trị này không phải tổng RAM tiến trình hoặc toàn bộ bộ nhớ native của HiGHS. Thời gian LP được đo khi bật `tracemalloc`, vì vậy bao gồm ảnh hưởng của công cụ đo.
 
-Kiểm tra:
-
-$$
-|Ax-b|
-$$
-
-hoặc:
+**Tiết kiệm chi phí:**
 
 $$
-Ax-b
+Saving=\frac{C_{greedy}-C_{LP}}{C_{greedy}}\times100\%.
 $$
 
-Mong muốn:
+Nếu chi phí greedy bằng 0, tỷ lệ tương đối không xác định và để trống; vẫn báo chi phí tuyệt đối. Các lần chạy dùng cùng dữ liệu cho LP và greedy.
 
-$$
-Violation\approx0
-$$
+## 4.11. Phương pháp baseline
 
----
+Baseline **Greedy Nearest Cost** duyệt khách hàng theo thứ tự đầu vào. Với mỗi khách hàng, các kho được xét theo chi phí đơn vị tăng dần; nếu bằng nhau, ưu tiên thứ tự kho. Mỗi lần giao lượng nhỏ hơn giữa cung còn lại và cầu chưa đáp ứng, sau đó chuyển sang kho tiếp theo cho đến khi đủ cầu. Phương pháp không sử dụng tọa độ địa lý; từ “nearest” ở đây được hiểu là chi phí thấp nhất.
 
-## Metric 3 – Runtime
+Baseline này tạo phương án khả thi nhưng không bảo đảm tối ưu toàn cục. Ví dụ hai kho có cung [1,1], hai khách hàng có cầu [1,1] và chi phí [[1,2],[2,100]]: greedy có chi phí 101, trong khi LP đạt 4. Kết quả phụ thuộc thứ tự khách hàng nên phải giữ cố định thứ tự khi tái lập.
 
-Đo:
+NW Corner, Least Cost và Vogel vẫn là các phương pháp khởi tạo trong phần giải tay; MODI dùng cải thiện và kiểm tra tối ưu cho ví dụ vận tải. Những phương pháp đó không được triển khai trong app hoặc dùng làm baseline cho bộ thực nghiệm quy mô lớn hiện tại.
 
-$$
-T_{solve}
-$$
+## 4.12. Kết quả thực nghiệm
 
-theo quy mô bài toán.
+Mỗi kích thước dùng 3 seed độc lập 17, 18, 19; mỗi bộ dữ liệu chạy lặp 3 lần, tổng cộng **45 lượt trên 15 bộ dữ liệu**. Bộ sinh lấy cầu nguyên từ 10 đến 100, phân bổ tổng cầu thành cung cân bằng bằng bộ sinh số giả ngẫu nhiên có seed, và lấy chi phí nguyên từ 1 đến 100. Các bộ dữ liệu cùng seed được sinh lại giống nhau trong môi trường đã lưu.
 
----
+Chạy tuần tự theo kích thước, seed rồi lần lặp, không có bước warm-up riêng. Thống kê thời gian dùng trung vị của 9 lượt ở mỗi kích thước; min–max phản ánh toàn bộ 9 lượt. Khoảng chi phí và saving phản ánh 3 bộ dữ liệu, vì các lần lặp cùng seed không tạo dữ liệu mới.
 
-## Metric 4 – Saving Ratio
+| Quy mô | Số biến | Chi phí LP min–max | Saving min–max (%) |
+| --- | ---: | ---: | ---: |
+| 2×3 | 6 | 4.819–5.984 | 0,00–0,68 |
+| 5×10 | 50 | 11.311–13.076 | 13,50–31,73 |
+| 10×50 | 500 | 27.841–35.101 | 23,00–27,46 |
+| 50×100 | 5.000 | 17.832–19.685 | 44,89–53,88 |
+| 100×500 | 50.000 | 42.831–47.245 | 34,10–42,30 |
 
-So với một phương pháp baseline:
+| Quy mô | Solve trung vị (ms) | Solve min–max (ms) | Pipeline trung vị (ms) | Python peak lớn nhất (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| 2×3 | 1,923 | 1,824–4,070 | 2,147 | 0,026 |
+| 5×10 | 2,522 | 2,509–2,733 | 2,833 | 0,030 |
+| 10×50 | 11,648 | 11,414–11,853 | 12,459 | 0,745 |
+| 50×100 | 105,175 | 104,724–108,566 | 109,533 | 17,674 |
+| 100×500 | 1.362,409 | 1.320,155–1.735,330 | 1.415,227 | 691,630 |
 
-$$
-Saving=
-\frac{C_{baseline}-C_{optimal}}
-{C_{baseline}}
-\times100\%
-$$
+MiB được tính bằng số byte chia $2^{20}$. Tất cả **45/45 lượt** trả `optimal`; vi phạm lớn nhất của cả LP và greedy là **0**. LP không có chi phí lớn hơn greedy trên các bộ đã chạy, nhưng hai seed của bài toán 2×3 có cùng chi phí giữa hai phương pháp. Do đó không khẳng định LP luôn tiết kiệm nghiêm ngặt so với greedy.
 
----
+Thời gian và bộ nhớ tăng rõ ở bài toán 100×500. Bộ dựng mô hình hiện dùng ma trận đặc; riêng hai ma trận ràng buộc có tổng $600\times50.000=30.000.000$ phần tử float64, tương đương khoảng 228,88 MiB trước các bản sao và chuyển đổi. Kết quả này gợi ý chuyển sang biểu diễn sparse nếu tiếp tục mở rộng quy mô; chưa cần thay đổi để chạy bộ thí nghiệm hiện tại.
 
-# 4.11. Baseline
+Kết quả chỉ mô tả bộ dữ liệu tổng hợp và máy đo nêu trên. Không suy luận xu hướng chi phí từ các quy mô khác nhau vì cung/cầu và chi phí được sinh riêng, không dùng 3 lần lặp của cùng seed như 3 mẫu dữ liệu độc lập, và không dùng case minh họa 620/696 để suy luận hiệu năng. Các số trong bảng là kết quả đo, có thể thay đổi khi chạy lại trên môi trường khác.
 
-## Phương pháp tham chiếu trong báo cáo
+## 4.13. Thiết kế giao diện và demo
 
-NW Corner, Least Cost và Vogel là các baseline cho **ví dụ giải tay cân bằng**. Bảng so sánh cần phân biệt rõ chi phí khởi tạo với chi phí tối ưu sau MODI/HiGHS:
+Giao diện tổ chức trên một trang theo bốn bước, với sidebar để chọn dữ liệu mẫu. Ở bước mô hình hóa, người trình bày có thể mở bảng ánh xạ biến và ma trận ràng buộc. Kết quả chia thành ba tab: **Sơ đồ vận chuyển**, **Phân bổ và chi phí**, **Kiểm chứng nghiệm**. Cạnh của sơ đồ là quan hệ phân bổ hàng, không phải tuyến đường địa lý.
 
-| Phương pháp | Vai trò                      | Giá trị so sánh                       |
-| -------------- | ----------------------------- | ---------------------------------------- |
-| NW Corner      | Nghiệm ban đầu             | Chi phí khởi tạo                      |
-| Least Cost     | Nghiệm ban đầu             | Chi phí khởi tạo                      |
-| Vogel          | Nghiệm ban đầu             | Chi phí khởi tạo                      |
-| MODI           | Cải thiện nghiệm vận tải | Chi phí tối ưu của ví dụ giải tay |
-| HiGHS          | Solver đối chứng           | Xác nhận chi phí tối ưu             |
+![Hình 4.2. Ma trận lượng giao và phép tính chi phí từng tuyến trên case 3×5.](../demo/3x5-costs.png){width=15cm}
 
-Các baseline này không bắt buộc xuất hiện trong giao diện phần mềm hoặc benchmark quy mô lớn.
+![Hình 4.3. Kiểm chứng cung/cầu và biểu đồ lượng đã giao, còn lại tại kho.](../demo/3x5-checks.png){width=15cm}
 
-Có thể xây phương pháp:
+Kịch bản demo bắt đầu với 2×3 để đối chiếu chi phí 620, sau đó chuyển sang 3×5 để đối chiếu 696. Tiếp theo tăng cung để minh họa hàng dư hoặc giảm tổng cung xuống dưới cầu để minh họa cảnh báo. Các tình huống này được khôi phục bằng nút **Nạp ví dụ**. Hướng dẫn thao tác và ảnh chụp nằm trong `docs/demo/README.md`.
 
-### Greedy Nearest Cost
+Với nhiều tuyến, bộ lọc theo khách hàng giúp đọc sơ đồ rõ hơn. Tên quá dài có thể vượt khung nút. Giao diện chưa hỗ trợ nhập tệp, lưu dữ liệu lâu dài, xác thực hoặc phân quyền; dữ liệu được giữ trong phiên Streamlit.
 
-Với từng khách hàng:
+## 4.14. Kết quả kiểm thử
 
-1. chọn kho có chi phí vận chuyển thấp nhất;
-2. lấy hàng cho đến khi kho hết capacity;
-3. chuyển sang kho tiếp theo.
+Bộ kiểm thử sau bổ sung baseline và runner có **62 tests đạt**. Các kiểm tra tập trung vào tính đúng của dữ liệu, ánh xạ ma trận, trạng thái solver, phân tích nghiệm, giao diện và phép đo thực nghiệm.
 
-Phương pháp này đơn giản nhưng không đảm bảo global optimum.
+| Trường hợp | Kỳ vọng và kết quả | Bằng chứng |
+| --- | --- | --- |
+| Cung bằng cầu | Case 2×3 đạt 620, case 3×5 đạt 696 | `test_solver.py`, `test_fixtures.py` |
+| Cung lớn hơn cầu | Không giao vượt cung, báo hàng dư | `test_regression_cases.py`, `test_ui.py` |
+| Cung nhỏ hơn cầu | Validation chặn đầu vào; solver trực tiếp báo infeasible | `test_validation.py`, `test_regression_cases.py` |
+| Tuyến rất đắt | Không dùng tuyến đắt khi tuyến khác đủ đáp ứng | `test_regression_cases.py` |
+| Nhiều nghiệm tối ưu | Chấp nhận một nghiệm khả thi cùng chi phí tối ưu | `test_regression_cases.py` |
+| Dữ liệu không hợp lệ | Chặn giá trị âm, không hữu hạn, sai kích thước hoặc nhãn | `test_validation.py` |
+| Thay đổi dữ liệu và bộ lọc | Xoá nghiệm cũ khi dữ liệu đổi; giữ nghiệm khi lọc sơ đồ | `test_ui.py` |
+| Baseline greedy | Khả thi, không sửa đầu vào, xử lý hoà và trường hợp kém LP | `test_baselines.py` |
+| Runner | Seed tái lập, lưu số lần lặp, metadata, phép đo và nguyên nhân lỗi | `test_experiments.py` |
 
-So sánh:
+Kiểm tra trình duyệt đã xác nhận luồng giải 2×3 và chuyển sang 3×5, ba tab kết quả và hiển thị sơ đồ. Số tests không đại diện cho mức bao phủ mọi tương tác trình duyệt hoặc mọi bộ dữ liệu có thể nhập.
 
-$$
-Greedy
-$$
+## 4.15. Giới hạn và hướng mở rộng
 
-với:
+Các bước mở rộng gần với nhu cầu demo gồm nhật ký MODI hoặc Simplex phục vụ giảng dạy, nhập dữ liệu từ tệp và cải thiện sơ đồ cho nhiều nút. Đối với quy mô lớn, ưu tiên ma trận sparse và bổ sung phép đo bộ nhớ tiến trình nếu cần đánh giá tổng RAM.
 
-$$
-LP
-$$
-
-sẽ giúp chứng minh lợi ích của tối ưu toán học.
-
----
-
-# 4.12. Thực nghiệm
-
-Đề xuất 5 nhóm:
-
-| Dataset    | Kho | Khách hàng | Số biến |
-| ---------- | --: | -----------: | --------: |
-| Small      |   2 |            3 |         6 |
-| Small+     |   5 |           10 |        50 |
-| Medium     |  10 |           50 |       500 |
-| Large      |  50 |          100 |     5.000 |
-| Very Large | 100 |          500 |    50.000 |
-
-Số biến:
-
-$$
-N=m\times n
-$$
-
-Đo:
-
-- runtime;
-- objective;
-- memory;
-- saving so với greedy.
-
-Case study 3 kho và 5 khách hàng ở Mục 2.10 được giữ cố định để đối chiếu đúng kết quả 696 giữa giải tay và HiGHS. Nó không được dùng để suy luận hiệu năng; các nhóm dữ liệu trong bảng mới là cơ sở đo runtime và khả năng mở rộng.
-
----
-
-# 4.13. Giao diện dự kiến
-
-## Trang 1 – Input
-
-```text
-WAREHOUSES
-
-W1   Capacity: 80
-W2   Capacity: 70
-
-CUSTOMERS
-
-C1   Demand: 50
-C2   Demand: 60
-C3   Demand: 40
-```
-
----
-
-## Trang 2 – Cost Matrix
-
-```text
-       C1  C2  C3
-W1      4   6   8
-W2      5   4   3
-```
-
----
-
-## Trang 3 – Optimization
-
-Nút:
-
-**$Find Optimal Solution$**
-
----
-
-## Trang 4 – Result
-
-```text
-OPTIMAL COST: 620
-
-W1 → C1: 50
-W1 → C2: 30
-
-W2 → C2: 30
-W2 → C3: 40
-```
-
-Có thể bổ sung heatmap của ma trận shipment.
-
----
-
-# 4.14. Các trường hợp kiểm thử
-
-### Trường hợp 1
-
-$$
-Supply=Demand
-$$
-
-→ balanced transportation.
-
-### Trường hợp 2
-
-$$
-Supply>Demand
-$$
-
-→ một phần capacity không sử dụng.
-
-### Trường hợp 3
-
-$$
-Supply<Demand
-$$
-
-→ infeasible.
-
-### Trường hợp 4
-
-Một tuyến có chi phí rất lớn.
-
-Solver phải hạn chế sử dụng tuyến đó.
-
-### Trường hợp 5
-
-Nhiều phương án tối ưu bằng nhau.
-
-Solver có thể trả về một trong các optimal solutions.
-
----
-
-# 4.15. Hướng mở rộng
-
-Sau phiên bản cơ bản, hệ thống có thể mở rộng sang:
-
-## Nhiều sản phẩm
-
-$$
-x_{ijp}
-$$
-
----
-
-## Multi-period
-
-$$
-x_{ijt}
-$$
-
----
-
-## Chi phí cố định
-
-Ví dụ:
-
-> Nếu sử dụng một tuyến thì phải trả một khoản phí cố định.
-
-Khi đó cần binary variable:
-
-$$
-y_{ij}\in\{0,1\}
-$$
-
-và bài toán trở thành:
-
-$$
-MILP
-$$
-
----
-
-## Facility Location
-
-Quyết định:
-
-$$
-Open\ Warehouse?
-$$
-
----
-
-## Vehicle Routing
-
-Không chỉ quyết định:
-
-$$
-How\ Much?
-$$
-
-mà còn:
-
-$$
-Which\ Route?
-$$
-
----
-
-## Demand uncertainty
-
-Có thể mở rộng sang:
-
-- robust optimization;
-- stochastic optimization.
+Các mô hình nhiều sản phẩm, nhiều kỳ, chi phí cố định, mở/đóng kho, định tuyến xe và bất định nhu cầu được giữ làm hướng nghiên cứu tiếp theo. Chúng cần biến hoặc ràng buộc mới, có thể dẫn đến MILP hay mô hình tối ưu khác; chưa thuộc khả năng của phiên bản LP hiện tại.
 
 ---
 

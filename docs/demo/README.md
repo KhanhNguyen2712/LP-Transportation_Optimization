@@ -1,7 +1,7 @@
 # Demo TransportOpt cho phần 4 của proposal_final
 
 Đối chiếu với `docs/proposal/proposal_final.md`, các mục 4.1–4.15 trong
-nội dung chính (mục lục của proposal hiện đánh số khác nội dung chính).
+nội dung chính; mục lục đã được đồng bộ theo bản báo cáo cập nhật.
 
 ## Chạy và trình bày trong khoảng 5 phút
 
@@ -77,7 +77,7 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
-- Bộ test: **51 passed**, bao gồm UI AppTest cho 620/696, giữ nghiệm khi lọc,
+- Bộ test: **62 passed**, bao gồm UI AppTest cho 620/696, giữ nghiệm khi lọc,
   xoá nghiệm khi đổi dữ liệu, dư cung, cầu bằng 0 và dữ liệu không hợp lệ.
 - Kiểm tra trình duyệt: giải 2×3 được 620; chuyển sang 3×5 được 696 sau khi
   sửa đồng bộ số kho/khách hàng khi nạp ví dụ; các tab kết quả render được,
@@ -90,5 +90,6 @@ uv run ruff format --check .
 - Kiểm tra khả thi không tự chứng minh tối ưu; kết luận tối ưu dựa trên trạng thái
   solver. Nếu có nhiều nghiệm tối ưu, cách phân bổ có thể khác nhưng cùng chi phí.
 - Các hình demo không phải bằng chứng runtime, memory hoặc saving ratio.
-  Thực nghiệm quy mô lớn của Mục 4.12 vẫn dùng `scripts/run_experiments.py`;
-  lần nâng cấp giao diện này không chạy lại benchmark.
+  Kết quả đo riêng: **45/45 lượt optimal**, 15 bộ dữ liệu trên 5 quy mô,
+  seed 17/18/19, mỗi bộ lặp 3 lần. Xem [hồ sơ thực nghiệm](../experiments/README.md)
+  và phần 4.10–4.12 của [báo cáo](../proposal/proposal_final.md).
