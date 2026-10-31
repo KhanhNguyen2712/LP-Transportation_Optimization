@@ -23,8 +23,11 @@ uv sync --group dev
 uv run streamlit run app.py
 ```
 
-Trong sidebar, chọn `3 × 5 example`, bấm `Load fixture`, rồi bấm
-`Validate and solve`. Case này có nghiệm tối ưu với objective **696**.
+Trong sidebar, chọn `3 × 5 example`, bấm `Nạp ví dụ`, rồi bấm
+`Tìm phương án tối ưu`. Case này có nghiệm tối ưu với objective **696**.
+
+Giao diện có sơ đồ trước/sau tối ưu, diễn giải mô hình LP, bảng tính chi phí
+và kiểm chứng cung/cầu. Xem [kịch bản demo và hình cho phần 4](docs/demo/README.md).
 
 ## Chạy tests
 

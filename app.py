@@ -47,6 +47,7 @@ def main():
     from transportopt.model_builder import build_model
     from transportopt.results import analyze_result
     from transportopt.solver import solve
+    from transportopt.ui.explanation import render_model
     from transportopt.ui.input_form import (
         case_from_tables,
         fixture_options,
@@ -55,43 +56,73 @@ def main():
     from transportopt.ui.result_view import render_result
     from transportopt.validation import validate_input
 
-    st.set_page_config(page_title="TransportOpt")
+    st.set_page_config(page_title="TransportOpt · Demo vận tải", layout="wide")
     st.title("TransportOpt")
-    st.caption("Solve a transportation problem with linear programming.")
+    st.caption("Tối ưu phân bổ hàng từ kho đến khách hàng · Quy hoạch tuyến tính")
+    st.write("Nhập dữ liệu → Lập mô hình → Giải bằng HiGHS → Kiểm chứng phương án")
 
     if "case" not in st.session_state:
         st.session_state.case = load_named_fixture(fixture_options()[0])
 
     with st.sidebar:
-        st.header("Examples")
-        fixture_name = st.selectbox("Load a fixture", fixture_options())
-        if st.button("Load fixture"):
+        st.header("Dữ liệu demo")
+        fixture_name = st.selectbox("Chọn ví dụ", fixture_options())
+        if st.button("Nạp ví dụ", key="load_fixture"):
             st.session_state.case = load_named_fixture(fixture_name)
+            for key in (
+                "warehouses",
+                "customers",
+                "costs",
+                "solution",
+                "input_network",
+                "result_network",
+            ):
+                st.session_state.pop(key, None)
+            st.session_state.warehouse_count = len(st.session_state.case.warehouses)
+            st.session_state.customer_count = len(st.session_state.case.customers)
             st.rerun()
+        st.caption("2 × 3: chi phí 620 · 3 × 5: chi phí 696")
+        st.caption("Mô hình một loại hàng, chi phí tuyến tính, cung/cầu đã biết.")
 
+    st.subheader("Bước 1 · Nhập kho, khách hàng và chi phí")
     current = st.session_state.case
     warehouse_count = st.number_input(
-        "Warehouses", min_value=1, max_value=20, value=len(current.warehouses), step=1
+        "Số kho",
+        min_value=1,
+        max_value=20,
+        value=len(current.warehouses),
+        step=1,
+        key="warehouse_count",
     )
     customer_count = st.number_input(
-        "Customers", min_value=1, max_value=20, value=len(current.customers), step=1
+        "Số khách hàng",
+        min_value=1,
+        max_value=20,
+        value=len(current.customers),
+        step=1,
+        key="customer_count",
     )
-    rows = _resize(current.warehouses, warehouse_count, "Warehouse")
-    columns = _resize(current.customers, customer_count, "Customer")
+    rows = [
+        current.warehouses[i] if i < len(current.warehouses) else f"Kho {i + 1}"
+        for i in range(warehouse_count)
+    ]
+    columns = [
+        current.customers[j] if j < len(current.customers) else f"Khách {j + 1}"
+        for j in range(customer_count)
+    ]
     supply = _resize(current.supply.tolist(), warehouse_count, 0.0)
     demand = _resize(current.demand.tolist(), customer_count, 0.0)
     costs = _resize_matrix(current.costs.tolist(), warehouse_count, customer_count)
 
-    st.subheader("Model input")
     left, right = st.columns(2)
     with left:
-        st.write("Warehouse names and supply")
+        st.write("Tên kho và lượng cung (supply)")
         warehouse_data = pd.DataFrame({"name": rows, "supply": supply})
         warehouse_data = st.data_editor(
             warehouse_data, hide_index=True, num_rows="fixed", key="warehouses"
         )
     with right:
-        st.write("Customer names and demand")
+        st.write("Tên khách hàng và lượng cầu (demand)")
         customer_data = pd.DataFrame({"name": columns, "demand": demand})
         customer_data = st.data_editor(
             customer_data, hide_index=True, num_rows="fixed", key="customers"
@@ -100,37 +131,64 @@ def main():
     cost_data = pd.DataFrame(
         costs, index=list(warehouse_data["name"]), columns=list(customer_data["name"])
     )
-    st.write("Unit cost matrix")
+    st.write("Ma trận chi phí/đơn vị · hàng là kho, cột là khách hàng")
     cost_data = st.data_editor(cost_data, key="costs", width="stretch")
 
-    if st.button("Validate and solve", type="primary"):
+    try:
+        case = case_from_tables(
+            warehouse_data["name"].tolist(),
+            customer_data["name"].tolist(),
+            warehouse_data["supply"].tolist(),
+            customer_data["demand"].tolist(),
+            cost_data.to_numpy(),
+        )
+        validate_input(case)
+    except (InvalidInputError, TypeError, ValueError) as exc:
+        st.session_state.pop("solution", None)
+        st.error(f"Dữ liệu chưa hợp lệ: {exc}")
+        return
+
+    signature = (
+        case.warehouses,
+        case.customers,
+        case.supply.tobytes(),
+        case.demand.tobytes(),
+        case.costs.tobytes(),
+    )
+    previous = st.session_state.get("solution")
+    if previous is not None and previous[0] != signature:
+        st.session_state.pop("solution", None)
+        st.info("Dữ liệu đã thay đổi. Bấm giải lại để cập nhật phương án.")
+
+    left, middle, right = st.columns(3)
+    left.metric("Tổng cung", f"{case.supply.sum():g}")
+    middle.metric("Tổng cầu", f"{case.demand.sum():g}")
+    right.metric("Cung dư", f"{case.supply.sum() - case.demand.sum():g}")
+    render_model(st, case)
+    st.subheader("Bước 3 · Giải bài toán")
+    st.caption(
+        "SciPy linprog(method='highs') nhận mô hình LP và tìm nghiệm tối ưu. "
+        "Phần diễn giải trình bày cách lập mô hình và kiểm chứng kết quả; "
+        "không phải nhật ký các vòng lặp Simplex/MODI bên trong solver."
+    )
+    if st.button("Tìm phương án tối ưu", type="primary", key="solve"):
+        st.session_state.pop("solution", None)
         try:
-            case = case_from_tables(
-                warehouse_data["name"].tolist(),
-                customer_data["name"].tolist(),
-                warehouse_data["supply"].tolist(),
-                customer_data["demand"].tolist(),
-                cost_data.to_numpy(),
-            )
-            validate_input(case)
             solved = solve(build_model(case))
-            if solved.status == "infeasible":
-                st.error(
-                    f"No feasible solution exists for these inputs: {solved.message}"
-                )
-            elif solved.status == "error":
-                st.error(
-                    f"The solver failed before producing a result: {solved.message}"
-                )
-            elif solved.status != "optimal":
-                st.error(f"Solver returned an unexpected status: {solved.status}")
-            else:
+            if solved.status == "optimal":
                 analysis = _require_feasible(analyze_result(case, solved))
-                render_result(st, analysis, case.warehouses)
+                st.session_state.solution = (signature, analysis)
+            else:
+                st.error(
+                    f"Không tìm được nghiệm tối ưu ({solved.status}): {solved.message}"
+                )
         except FeasibilityGateError as exc:
-            st.error(f"The solution could not be verified: {exc}")
+            st.error(f"Không thể xác minh nghiệm: {exc}")
         except (InvalidInputError, TypeError, ValueError) as exc:
-            st.error(f"Please fix the input: {exc}")
+            st.error(f"Không thể giải bài toán: {exc}")
+
+    if "solution" in st.session_state:
+        render_result(st, st.session_state.solution[1], case)
 
 
 if __name__ == "__main__":
