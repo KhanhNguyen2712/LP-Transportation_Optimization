@@ -44,19 +44,29 @@ uv run ruff format --check .
 
 ## Chạy thực nghiệm tái lập
 
-Runner dùng seed mặc định `17` và các kích thước cố định trong
-`scripts/run_experiments.py`:
+Runner dùng seed mặc định `17` và 5 kích thước từ 2×3 đến 100×500.
+Chạy bộ thực nghiệm cho báo cáo với 3 seed, mỗi seed lặp 3 lần:
 
 ```bash
-uv run python scripts/run_experiments.py
+uv run python scripts/run_experiments.py --seeds 17 18 19 --repeats 3
 ```
 
-CSV được ghi tại `runs/experiments.csv`. Có thể đổi seed hoặc đường dẫn output:
+Kết quả thô tại `runs/experiments.csv`; môi trường, commit, SHA-256 source và
+định nghĩa phép đo tại `runs/experiments.metadata.json`. Khi chạy lại để đối
+chiếu mà không ghi đè bản đã lưu:
 
 ```bash
-uv run python scripts/run_experiments.py \
-  --seed 17 --output runs/experiments.csv
+uv run python scripts/run_experiments.py --seeds 17 18 19 --repeats 3 \
+  --output /tmp/transportopt-experiments.csv
 ```
+
+Baseline greedy phục vụ khách hàng theo thứ tự nhập, chọn kho còn hàng có
+chi phí thấp nhất; hoà chi phí thì ưu tiên thứ tự kho. `saving_ratio` là tỷ lệ
+chi phí LP giảm so với greedy, để trống nếu chi phí greedy bằng 0.
+`runtime` đo validation + build + solve + analysis, không gồm sinh dữ liệu và
+greedy; `solve_seconds` đo lời gọi solver riêng. `memory` là peak `tracemalloc`
+trong pipeline LP, không phải toàn bộ RAM tiến trình/HiGHS. Thời gian LP được
+đo khi bật `tracemalloc`, không dùng để suy luận tốc độ production.
 
 ## Giới hạn v1
 

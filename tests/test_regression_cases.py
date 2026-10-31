@@ -45,3 +45,11 @@ def test_multiple_optima_still_produce_a_feasible_result():
     assert result.objective == 0
     assert np.max(np.abs(result.demand_residual)) <= 1e-8
     assert np.max(result.supply_violation) <= 1e-8
+
+
+def test_solver_avoids_expensive_routes_when_alternatives_can_meet_demand():
+    case = _case([2, 2], [2, 2], [[1e12, 1], [1, 1e12]])
+    result = analyze_result(case, solve(build_model(case)))
+
+    np.testing.assert_allclose(result.shipment, [[0, 2], [2, 0]])
+    assert result.objective == 4
