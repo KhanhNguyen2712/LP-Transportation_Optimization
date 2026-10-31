@@ -56,6 +56,24 @@
 
 ---
 
+# BẢNG PHÂN CÔNG NHÓM
+
+| Người | Phần sở hữu | Nộp gì |
+| -------- | --------------------- | ---------------------------------- |
+| 1 | Điều phối, tích hợp + Chương 1 | Đề cương, bảng ký hiệu, bản hợp nhất, danh sách kiểm; Chương 1 |
+| 2 | Mục 2.1–2.4 | Khái niệm tối ưu, quy hoạch tuyến tính, thành phần mô hình, biểu diễn ma trận |
+| 3 | Mục 2.5–2.8 | Miền nghiệm khả thi, ứng dụng thực tế, bài toán vận tải, liên hệ luồng mạng |
+| 4 | Mục 2.9 | Ba cách lập nghiệm ban đầu và bảng chi phí khởi tạo trên bộ dữ liệu 3×5 |
+| 5 | Mục 2.10 | Bộ dữ liệu 3×5, các bảng giải tay và chi phí tối ưu 696 |
+| 6 | Mục 3.1–3.3 | Dạng chuẩn, cơ sở đại số tuyến tính, nghiệm cơ sở khả thi |
+| 7 | Mục 3.4–3.5 | Ý tưởng hình học và thuật toán Simplex, kèm ví dụ giải tay |
+| 8 | Mục 3.6–3.9 | Đối ngẫu, phương pháp điểm trong, cấu trúc ma trận vận tải, cách chọn thuật toán |
+| 9 | Mục 4.1–4.7 | Mục tiêu sản phẩm, dữ liệu vào, mô hình toán, kiến trúc, chức năng |
+| 10 | Mục 4.8–4.15 | Công nghệ, quy trình xử lý, cách đánh giá, mốc so sánh, thực nghiệm, kiểm thử |
+| 11 | Kết luận và kiểm soát chất lượng | Chương 5, tài liệu tham khảo, danh mục bảng/hình, định dạng, bài trình bày |
+
+---
+
 # 1. PHẦN MỞ ĐẦU
 
 ## 1.1. Lý do chọn đề tài
